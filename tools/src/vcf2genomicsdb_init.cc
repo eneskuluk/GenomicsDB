@@ -542,11 +542,42 @@ static int rename_file(const std::string& src, const std::string& dest) {
   return OK;
 }
 
+#include <sys/stat.h>
+#include <unistd.h>
+#define MAX_WRITE_COUNT 1500000000    // ~ 1.5 GB
+static int write_to_file_kernel(int fd, const void *buffer, size_t buffer_size) {
+  // Write in batches of MAX_WRITE_COUNT
+  size_t nbytes = 0;
+  char *pbuf = reinterpret_cast<char *>(const_cast<void *>(buffer));
+  do {
+    size_t count = (buffer_size - nbytes) > MAX_WRITE_COUNT ? MAX_WRITE_COUNT : buffer_size - nbytes;
+    assert(count != 0);
+    ssize_t bytes_written = write(fd, reinterpret_cast<void *>(pbuf), count);
+    if(bytes_written < 0) {
+      return -1;
+    }
+    nbytes += bytes_written;
+    pbuf += bytes_written;
+  } while (nbytes < buffer_size);
+
+  return 0;
+}
+
 static int update_json(import_config_t import_config) {
+  size_t size = 0;
+  if (TileDBUtils::is_file(import_config.callset_output)) {
+    size = (size_t)TileDBUtils::file_size(import_config.callset_output);
+  } else {
+     g_logger.error("File {} not found", import_config.callset_output);
+  }
   char *callset_contents;
   size_t callset_length;
   if (TileDBUtils::read_entire_file(import_config.callset_output, (void **)&callset_contents, &callset_length)) {
     g_logger.error("Could not read callset json file {}", import_config.callset_output);
+    return ERR;
+  }
+  if (size != callset_length) {
+    g_logger.error("Something wrong with reading file {}, expected size {} and actual {} do not match", import_config.callset_output, size, callset_length);
     return ERR;
   }
   google::protobuf::StringPiece callset_string(callset_contents, callset_length);
@@ -556,6 +587,21 @@ static int update_json(import_config_t import_config) {
   CallsetMappingPB* callset_protobuf = new CallsetMappingPB();
   auto status = google::protobuf::util::JsonStringToMessage(callset_string, callset_protobuf, json_options);
   if (!status.ok()) {
+#ifdef __linux
+    char filename_pattern[] = "callset.json_XXXXXX";
+    int fd = mkstemp(filename_pattern);
+    struct stat st;
+    if (!fstat(fd, &st)) {
+      write_to_file_kernel(fd, callset_contents, callset_length);
+      fsync(fd);
+      char buf[PATH_MAX];
+      std::string path="/proc/self/fd/"+std::to_string(fd);
+      auto size = readlink(path.c_str(), buf, PATH_MAX);
+      close(fd);
+      buf[size]=0;
+      g_logger.error("Issues with callset.json. Bytes read from {} saved in path {}", import_config.callset_output, buf);
+    }
+#endif
     g_logger.error("Protobuf could not apply {} to CallsetMappingPB {}", import_config.callset_output, status.message().as_string());
     free(callset_contents);
     return ERR;

@@ -793,8 +793,11 @@ void VidMapper::parse_callsets_json(const std::string& json, const bool is_file)
     json_doc = parse_json_file(filename);
   else {
     json_doc.Parse(json.c_str());
-    if (json_doc.HasParseError())
+    if (json_doc.HasParseError()) {
+      logger.error("Callset Contents of {} :", filename);
+      logger.error("{}", json.c_str());
       throw FileBasedVidMapperException(std::string("Syntax error in JSON ")+filename);
+    }
   }
   VERIFY_OR_THROW(json_doc.HasMember("callsets"));
   parse_callsets_json(json_doc["callsets"]);

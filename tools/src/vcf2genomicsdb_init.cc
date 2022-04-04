@@ -557,6 +557,8 @@ static int update_json(import_config_t import_config) {
   auto status = google::protobuf::util::JsonStringToMessage(callset_string, callset_protobuf, json_options);
   if (!status.ok()) {
     g_logger.error("Protobuf could not apply {} to CallsetMappingPB {}", import_config.callset_output, status.message().as_string());
+    std::string buf(callset_contents, callset_length);
+    g_logger.error("{}", buf);
     free(callset_contents);
     return ERR;
   }
@@ -615,6 +617,8 @@ static int update_json(import_config_t import_config) {
     auto status = google::protobuf::util::JsonStringToMessage(loader_json_string, import_config_protobuf, json_options);
     if (!status.ok()) {
       g_logger.error("Protobuf could not apply {} to ImportConfiguration {}", import_config.loader_json, status.message().as_string());
+      std::string buf(loader_json_contents, loader_json_length);
+      g_logger.error("{}", buf);
       free(loader_json_contents);
       return ERR;
     }

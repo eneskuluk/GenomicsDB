@@ -31,6 +31,8 @@
 #include "tiledb_utils.h"
 #include "genomicsdb_config_base.h"
 
+#include "genomicsdb_logger.h"
+
 #define VERIFY_OR_THROW(X) if(!(X)) throw GenomicsDBConfigException(#X);
 
 const char* g_json_indent_unit = "    ";
@@ -47,6 +49,9 @@ rapidjson::Document parse_json_file(const std::string& filename) {
   json_doc.Parse(json_buffer);
   free(json_buffer);
   if (json_doc.HasParseError()) {
+    logger.error("Contents of {} :", filename);
+    std::string buf(json_buffer, json_buffer_length);
+    logger.error("{}", buf);
     throw GenomicsDBConfigException(std::string("Syntax error in JSON file ")+filename);
   }
   return json_doc;

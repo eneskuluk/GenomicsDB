@@ -152,6 +152,9 @@ jobs:
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Coverage -DCMAKE_INSTALL_PREFIX=$CMAKE_INSTALL_PREFIX \
         -DCMAKE_PREFIX_PATH=$PREREQS_INSTALL_DIR -DGENOMICSDB_PROTOBUF_VERSION=$PROTOBUF_VERSION         \
         -DGENOMICSDB_RELEASE_VERSION=$GENOMICSDB_RELEASE_VERSION $JAVA_BUILD_ARGS
+        echo "*** NALINI"
+        cat  src/main/CMakeFiles/tiledbgenomicsdb.dir/build.make
+        echo "*** NALINI DONE"
 
     - name: Build
       working-directory: ${{env.GENOMICSDB_BUILD_DIR}}

@@ -93,7 +93,7 @@ set(LIBDBI_DIR "" CACHE PATH "Path to libdbi install directory")
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
-set(USE_HDFS True CACHE BOOL "Enables HDFS support")
+set(USE_HDFS FALSE CACHE BOOL "Enables HDFS support")
 set(BUILD_FOR_ARCH "" CACHE STRING "Arch for which to build - values passed to -march= option for gcc")
 
 #See https://cmake.org/Wiki/CMake_RPATH_handling#Common_questions

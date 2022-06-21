@@ -71,7 +71,9 @@ repair_htslib() {
 }
 
 build_genomicsdb() {
-	. /etc/profile
+  if [ $BUILD_FOR_PYTHON = false ]; then
+	  . /etc/profile
+  fi
 	repair_htslib &&
 	echo "Building GenomicsDB" &&
 	rm -rf build &&

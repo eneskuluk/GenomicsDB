@@ -36,6 +36,8 @@ USE_HDFS=${USE_HDFS:-false}
 
 GENOMICSDB_USER_DIR=`eval echo ~$GENOMICSDB_USER`
 
+echo "++++ $GENOMICSDB_USER $GENOMICSDS_INSTALL_DIR $GENOMICS_USER_DIR"
+
 CMAKE=`which cmake3`
 if [[ -z $CMAKE ]]; then
   echo "cmake3 not found. Cannot continue"
@@ -110,5 +112,9 @@ setup_genomicsdb_env() {
 
 build_genomicsdb &&
 setup_genomicsdb_env &&
+echo "++++ 1 $GENOMICSDB_USER $GENOMICSDS_INSTALL_DIR $GENOMICS_USER_DIR" &&
 echo "$GENOMICSDB_USER:$GENOMICSDB_USER" | chpasswd
 chown -R $GENOMICSDB_USER:genomicsdb $GENOMICSDB_USER_DIR
+echo "++++ after chown $?"
+
+exit 0

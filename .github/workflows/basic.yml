@@ -87,11 +87,12 @@ jobs:
           echo "Installing Prerequistes for MacOS..."
           INSTALL_PREFIX=$PREREQS_INSTALL_DIR PREREQS_ENV=$PREREQS_ENV ./install_prereqs.sh
         else
-          if [[ ${{matrix.os}} == ubuntu-22.04 ]]; then
-            INSTALL_OPENSSL=true
-          fi
           echo "Install Prerequisites for Linux.."
-          sudo INSTALL_PREFIX=$PREREQS_INSTALL_DIR PREREQS_ENV=$PREREQS_ENV ./install_prereqs.sh
+          if [[ ${{matrix.os}} == ubuntu-22.04 ]]; then
+            sudo INSTALL_OPENSSL=true INSTALL_PREFIX=$PREREQS_INSTALL_DIR PREREQS_ENV=$PREREQS_ENV ./install_prereqs.sh
+          else
+            sudo INSTALL_PREFIX=$PREREQS_INSTALL_DIR PREREQS_ENV=$PREREQS_ENV ./install_prereqs.sh
+          fi
         fi
         echo "cat prereqs env..."
         cat $PREREQS_ENV
